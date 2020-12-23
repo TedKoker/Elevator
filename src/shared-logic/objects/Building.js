@@ -40,6 +40,10 @@ export class Building {
         this.buildElveator(this.elevatorPosition)
     }
 
+    sleep = (milliseconds) => {
+        return new Promise(resolve => setTimeout(resolve, milliseconds))
+      }
+
     buildFloor(floorNumber) {
         const {x, y} = this.position
         const {width, height} = this.floorDimentions

@@ -1,9 +1,10 @@
 import Elevator from './components/elevator/Elevator'
-import './App.css';
+import Control from './components/Control'
 
 function App() {
   return (
-    <div>
+    <div style={{display:"flex"}}>
+      <Control/>
       <Elevator floors={40}/>
     </div>
   );
