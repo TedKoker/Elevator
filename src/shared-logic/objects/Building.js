@@ -40,10 +40,6 @@ export class Building {
         this.buildElveator(this.elevatorPosition)
     }
 
-    sleep = (milliseconds) => {
-        return new Promise(resolve => setTimeout(resolve, milliseconds))
-      }
-
     buildFloor(floorNumber) {
         const {x, y} = this.position
         const {width, height} = this.floorDimentions
@@ -106,8 +102,38 @@ export class Building {
             this.buildElveator(this.elevatorPosition)
             if(condition(location, destiny)) {
                 window.requestAnimationFrame(moveElevator)
+            } else {
+                this.animateDoor()
             }
         }
         window.requestAnimationFrame(moveElevator)
+    }
+
+    animateDoor() {
+        let growth = 1
+        let open = true
+        const {x} = this.position
+        const {width, height} = this.floorDimentions
+
+        const doorAction = () => {
+            if(growth <= width) {
+                this.context.fillStyle = open ? "green" : "red"
+                if(open) {
+                    this.context.fillRect(x ,this.elevatorPosition , growth, height)
+                } else {
+                    this.context.fillRect(x + width ,this.elevatorPosition , -growth, height)
+                }
+                growth+=1
+                window.requestAnimationFrame(doorAction)
+            } else if (open) {
+                setTimeout(() => {
+                    growth = 1
+                    open = false
+                    window.requestAnimationFrame(doorAction)
+                }, 1000)
+            }
+        }
+
+        window.requestAnimationFrame(doorAction)
     }
 }
