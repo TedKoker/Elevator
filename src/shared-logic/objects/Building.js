@@ -1,3 +1,5 @@
+import {OrderedLinkedList} from './OrderedLinkedList'
+
 export class Building {
 
     context
@@ -5,6 +7,9 @@ export class Building {
     floorDimentions
     floors
     elevatorPosition
+    elevatorMove
+    upList
+    downList
 
     constructor(canvas, position, floorDimentions, floors) {
         if(!(canvas instanceof HTMLCanvasElement)) {
@@ -24,6 +29,9 @@ export class Building {
         this.position = position
         this.floorDimentions = floorDimentions
         this.floors = floors
+        this.elevatorMove = false
+        this.upList = new OrderedLinkedList("minFirst")
+        this.downList = new OrderedLinkedList("maxFirst")
     }
 
     build(elevatorPosition) {
@@ -67,6 +75,22 @@ export class Building {
         this.context.clearRect(x-1, location, width+2, height)
     }
 
+    addToQeue(destiny) {
+        const floor = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
+        if(floor < destiny) {
+            this.upList.appenedNode(destiny)
+        } else {
+            this.downList.appenedNode(destiny)
+        }
+        // if(!this.upList.firstNode.childeNode && !this.elevatorMove) {
+        //     this.generalAnimation(destiny)
+        // }
+        if(!this.elevatorMove) {
+            // if(this.upList.count<1 || this.downList)
+            this.generalAnimation(destiny)
+        }
+    }
+
     animateMove(destiny) {
         if(!this.elevatorPosition) {
             throw new Error("You did not build the bulding \n you can not move elevator that do not exists")
@@ -77,13 +101,10 @@ export class Building {
         if(destiny > this.floors || destiny < 1) {
             throw new Error("elevator must be in the range of floors")
         }
-
-        let condition, growth
+        this.elevatorMove = true
+        let condition, growth, animation
         const startLocation = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
-        if(startLocation === destiny) {
-            return
-        }
-        else if(startLocation < destiny) {
+        if(startLocation < destiny) {
             condition = (current, final) => {return current < final}
             growth = -1
         } else {
@@ -92,7 +113,6 @@ export class Building {
         }
         const moveElevator = () => {
             this.elevatorPosition+=growth
-            
             const location = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
             this.clearFloor(Math.floor(location))
             this.clearFloor( Math.ceil(location))
@@ -100,16 +120,22 @@ export class Building {
             this.buildFloor(Math.floor(location))
             this.buildFloor(Math.ceil(location))
             this.buildElveator(this.elevatorPosition)
+            // if(destiny > this.upList.firstNode.value) {
+            //     window.cancelAnimationFrame(animation)
+            //     this.elevatorMove = false
+            //     this.generalAnimation(this.upList.firstNode.value)
+            //     return
+            // }
             if(condition(location, destiny)) {
-                window.requestAnimationFrame(moveElevator)
+                animation = window.requestAnimationFrame(moveElevator)
             } else {
-                this.animateDoor()
+                this.generalAnimation(destiny)
             }
         }
-        window.requestAnimationFrame(moveElevator)
+         animation = window.requestAnimationFrame(moveElevator)
     }
 
-    animateDoor() {
+    animateDoor(destiny) {
         let growth = 1
         let open = true
         const {x} = this.position
@@ -131,9 +157,36 @@ export class Building {
                     open = false
                     window.requestAnimationFrame(doorAction)
                 }, 1000)
+            } else {
+                this.elevatorMove = false
+                this.generalAnimation(destiny)
             }
         }
 
         window.requestAnimationFrame(doorAction)
+    }
+
+    generalAnimation(destiny) {
+        const floor = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
+        const currentList = this.upList.firstNode && destiny === this.upList.firstNode.value ? this.upList : this.downList
+        // if(this.upList.firstNode && floor === this.upList.firstNode.value) {
+        //     this.upList.removeFirst()
+        //     destiny = this.upList.firstNode ? this.upList.firstNode.value : destiny
+        // }
+        if(!this.upList.firstNode && currentList !== this.upList) {
+            destiny = currentList.firstNode ? currentList.firstNode.value : destiny
+        }
+        if(!this.downList.firstNode && currentList !== this.downList) {
+            destiny = currentList.firstNode ? currentList.firstNode.value : destiny
+        }
+        if(currentList.firstNode && floor === currentList.firstNode.value) {
+            currentList.removeFirst()
+            destiny = currentList.firstNode ? currentList.firstNode.value : destiny
+        }
+        if(!this.elevatorMove && floor !==destiny) {
+            this.animateMove(destiny)
+        } else if(this.elevatorMove) {
+            this.animateDoor(destiny)
+        }
     }
 }

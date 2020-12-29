@@ -25,7 +25,8 @@ function Elevator({floors, ...props}) {
 
     useEffect(() => {
         if(props.destiny>0 && building) {
-            building.animateMove(props.destiny)
+            // building.animateMove(props.destiny)
+            building.addToQeue(props.destiny)
         }
     }, [props.destiny])
 
