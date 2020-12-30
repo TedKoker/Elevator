@@ -1,7 +1,6 @@
 import {OrderedLinkedList} from './OrderedLinkedList'
 
-export class Building {
-
+export class Building2 {
     context
     position
     floorDimentions
@@ -10,6 +9,7 @@ export class Building {
     elevatorMove
     upList
     downList
+    currentList
 
     constructor(canvas, position, floorDimentions, floors) {
         if(!(canvas instanceof HTMLCanvasElement)) {
@@ -75,36 +75,44 @@ export class Building {
         this.context.clearRect(x-1, location, width+2, height)
     }
 
-    addToQeue(destiny) {
-        const floor = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
-        if(floor < destiny) {
-            this.upList.appenedNode(destiny)
-        } else {
-            this.downList.appenedNode(destiny)
+    answerCall(call) {
+        if(call && call.goingUp) {
+            this.upList.appenedNode(call.destination)
+        } else if(call) {
+            this.downList.appenedNode(call.destination)
         }
-        // if(!this.upList.firstNode.childeNode && !this.elevatorMove) {
-        //     this.generalAnimation(destiny)
-        // }
-        if(!this.elevatorMove) {
-            // if(this.upList.count<1 || this.downList)
-            this.generalAnimation(destiny)
+        if(!this.currentList) {
+            this.currentList = this.upList.firstNode ? this.upList : this.downList
+        }
+        if(this.currentList.count === 0) {
+            this.currentList = this.currentList===this.upList ? this.downList : this.upList
+        }
+        if(!this.elevatorMove && this.currentList.count > 0) {
+            let nextFloor = this.currentList.removeNext()
+            // if(!nextFloor.childeNode) { // && !nextFloor.childeNode
+            //     this.currentList = this.currentList===this.upList ? this.downList : this.upList
+            //     console.log("switch lists")
+            // }
+            this.manageCall(call || {destination: nextFloor.value, goingUp: this.currentList===this.upList})
         }
     }
 
-    animateMove(destiny) {
-        if(!this.elevatorPosition) {
-            throw new Error("You did not build the bulding \n you can not move elevator that do not exists")
+    manageCall(call) {
+        const floor = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
+        if(!this.elevatorMove && floor !==call.destination) {
+            this.animateMove(call)
+        } else if(this.elevatorMove) {
+            this.animateDoor(call)
+        } else {
+            this.answerCall()
         }
-        if(typeof destiny !== "number") {
-            throw new Error("destiny must be a number")
-        }
-        if(destiny > this.floors || destiny < 1) {
-            throw new Error("elevator must be in the range of floors")
-        }
+    }
+
+    animateMove(call) {
         this.elevatorMove = true
-        let condition, growth, animation
+        let condition, growth
         const startLocation = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
-        if(startLocation < destiny) {
+        if(startLocation < call.destination) {
             condition = (current, final) => {return current < final}
             growth = -1
         } else {
@@ -121,16 +129,16 @@ export class Building {
             this.buildFloor(Math.ceil(location))
             this.buildElveator(this.elevatorPosition)
 
-            if(condition(location, destiny)) {
-                animation = window.requestAnimationFrame(moveElevator)
+            if(condition(location, call.destination)) {
+                window.requestAnimationFrame(moveElevator)
             } else {
-                this.generalAnimation(destiny)
+                this.manageCall(call)
             }
         }
-         animation = window.requestAnimationFrame(moveElevator)
+         window.requestAnimationFrame(moveElevator)
     }
 
-    animateDoor(destiny) {
+    animateDoor(call) {
         let growth = 1
         let open = true
         const {x} = this.position
@@ -147,6 +155,7 @@ export class Building {
                 growth+=1
                 window.requestAnimationFrame(doorAction)
             } else if (open) {
+                console.log("point to choose if call.callPoint is true")
                 setTimeout(() => {
                     growth = 1
                     open = false
@@ -154,34 +163,10 @@ export class Building {
                 }, 1000)
             } else {
                 this.elevatorMove = false
-                this.generalAnimation(destiny)
+                this.manageCall(call)
             }
         }
 
         window.requestAnimationFrame(doorAction)
-    }
-
-    generalAnimation(destiny) {
-        const floor = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
-        const currentList = this.upList.firstNode && destiny === this.upList.firstNode.value ? this.upList : this.downList
-        // if(this.upList.firstNode && floor === this.upList.firstNode.value) {
-        //     this.upList.removeFirst()
-        //     destiny = this.upList.firstNode ? this.upList.firstNode.value : destiny
-        // }
-        if(!this.upList.firstNode && currentList !== this.upList) {
-            destiny = currentList.firstNode ? currentList.firstNode.value : destiny
-        }
-        if(!this.downList.firstNode && currentList !== this.downList) {
-            destiny = currentList.firstNode ? currentList.firstNode.value : destiny
-        }
-        if(currentList.firstNode && floor === currentList.firstNode.value) {
-            currentList.removeFirst()
-            destiny = currentList.firstNode ? currentList.firstNode.value : destiny
-        }
-        if(!this.elevatorMove && floor !==destiny) {
-            this.animateMove(destiny)
-        } else if(this.elevatorMove) {
-            this.animateDoor(destiny)
-        }
     }
 }

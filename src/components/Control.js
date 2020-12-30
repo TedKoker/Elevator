@@ -6,12 +6,19 @@ function Control(props) {
 
     const addDestiny = (e) => {
         const floor = Number(e.currentTarget.getAttribute("floor"))
-        props.setDestiny(floor)
+        if(e.target.getAttribute("direction")) {
+            props.setDestination(floor, e.target.getAttribute("direction")==="up", true)
+        }
+
     }
 
     const pushListItem = (text, floor) => {
         return (
-            <li key={floor} floor={floor} onClick={addDestiny}>{text}</li>
+            <li key={floor} floor={floor} onClick={addDestiny}>
+                {text+"  |  "} 
+                <a direction="up">Up | </a> 
+                <a direction="down"> Down</a>
+            </li>
         )
     }
 

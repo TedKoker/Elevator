@@ -1,8 +1,9 @@
 import {ELEVATOR_DESTENY} from './type'
 
-export const setDestiny = (destiny) => {
+export const setDestination = (destination, goingUp, calledPoint) => {
+
     return {
         type: ELEVATOR_DESTENY,
-        payload: destiny
+        payload: {destination, goingUp, calledPoint}
     }
 }

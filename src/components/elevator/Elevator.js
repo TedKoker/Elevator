@@ -2,7 +2,8 @@ import React, {useRef, useEffect, useState} from 'react'
 import { connect } from 'react-redux'
 
 import {fixRatio} from '../../shared-logic/canvase/canvas-helpers'
-import {Building} from '../../shared-logic/objects/Building'
+// import {Building} from '../../shared-logic/objects/Building'
+import {Building2} from '../../shared-logic/objects/Building2'
 
 function Elevator({floors, ...props}) {
 
@@ -17,18 +18,18 @@ function Elevator({floors, ...props}) {
         }
         let cnv = canvas.current
         fixRatio(cnv, cnv.getContext("2d"), 1000, 500)
-        const building = new Building(cnv, {x: 150, y:500}, floorDimensions, floors ? floors : 0)
+        const building = new Building2(cnv, {x: 150, y:500}, floorDimensions, floors ? floors : 0)
         building.build()
         setBuilding(building)
         // building.animateMove(30)
     }, [canvas])
 
     useEffect(() => {
-        if(props.destiny>0 && building) {
-            // building.animateMove(props.destiny)
-            building.addToQeue(props.destiny)
+        if(building) {
+            building.answerCall(props.elevatorCall)
+
         }
-    }, [props.destiny])
+    }, [props.elevatorCall])
 
     return (
         <div className="elevator">
@@ -41,7 +42,7 @@ function Elevator({floors, ...props}) {
 
 function mapStateToProps(state) {
     return {
-        destiny: state.elevatorControl.elevatorDesteny
+        elevatorCall: state.elevatorControl.elevatorDesteny
     }
 }
 

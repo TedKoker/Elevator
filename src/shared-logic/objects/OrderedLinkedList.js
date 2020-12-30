@@ -17,6 +17,7 @@ class Node {
 
     value
     childeNode
+    parentNode
 
     constructor(value) {
         this.value = value
@@ -24,6 +25,7 @@ class Node {
 
     appendChild(node) {
         this.childeNode = node
+        this.childeNode.parentNode = this
     }
 
 }
@@ -36,6 +38,7 @@ export class OrderedLinkedList {
 
     constructor(orderType, value) {
         this.orderType = order[orderType]
+        this.count = 0
         if(value) {
             this.firstNode = new Node(value)
             this.count++
@@ -44,9 +47,11 @@ export class OrderedLinkedList {
     }
 
     appenedNode(value) {
-
+        this.count++
+        // console.log("count + 1")
         if(!this.firstNode) {
             this.firstNode = new Node(value)
+            this.indexNode = this.firstNode
             return
         }
 
@@ -73,22 +78,38 @@ export class OrderedLinkedList {
         if(parentNode && parentNode.childeNode===undefined) {
             parentNode.childeNode = currentNode
         }
-        this.count++
     }
 
     removeFirst() {
         let node = this.firstNode
         this.firstNode = node.childeNode
         this.indexNode = this.firstNode
-
-        return node.value
+        
+        this.count--
+        // console.log("count - 1")
+        // return node.value
+        return node ? node.value : undefined
     }
 
     removeNext() {
         let node = this.indexNode
-        this.indexNode = this.indexNode.childeNode
-
-        return node.value
+        let parent = this.indexNode.parentNode
+        this.indexNode = this.indexNode && this.indexNode.childeNode ? this.indexNode.childeNode : this.firstNode
+        if(parent) {
+            parent.childeNode = this.indexNode
+        } else {
+            this.firstNode = this.indexNode
+        }
+        if(this.indexNode) {
+            this.indexNode.parentNode = parent
+        }
+        if(node === this.firstNode) {
+            this.firstNode = undefined
+        }
+        this.count--
+        // console.log("count - 1")
+        // return node.value
+        return node
     }
 
     print() {
