@@ -24,8 +24,44 @@ class Node {
     }
 
     appendChild(node) {
+        let child
+        if(this.childeNode) {
+            child = this.childeNode
+        }
         this.childeNode = node
         this.childeNode.parentNode = this
+        if(child) {
+            this.childeNode.childeNode = child
+        }
+    }
+
+    removeChild() {
+        if(!this.childeNode) {
+            console.log("there is not childnode to remove")
+            return
+        }
+
+        let node = this.childeNode
+        if(node.childeNode) {
+            this.childeNode = node.childeNode
+            node.childeNode.parentNode = this
+        } else {
+            this.childeNode = undefined
+        }
+    }
+
+    removeParent() {
+        if(!this.parentNode) {
+            console.log("there is not parentNode to remove")
+            return
+        }
+        let node = this.parentNode
+        if(node.parentNode) {
+            this.parentNode = node.parentNode
+            node.parentNode.childeNode = this
+        } else {
+            this.parentNode = undefined
+        }
     }
 
 }
@@ -35,48 +71,39 @@ export class OrderedLinkedList {
     orderType
     count
     indexNode
+    linkedListFinishedLoop
 
     constructor(orderType, value) {
         this.orderType = order[orderType]
         this.count = 0
+        this.linkedListFinishedLoop = false
         if(value) {
             this.firstNode = new Node(value)
             this.count++
-            this.indexNode = this.firstNode
         }
     }
 
     appenedNode(value) {
         this.count++
-        // console.log("count + 1")
+
         if(!this.firstNode) {
             this.firstNode = new Node(value)
-            this.indexNode = this.firstNode
             return
         }
 
         let currentNode = this.firstNode
-
         let parentNode = undefined
+
         while(currentNode && !this.orderType.rule(value, currentNode.value)) {
             parentNode = currentNode
             currentNode = currentNode.childeNode
         }
-
-        if(currentNode===undefined) {
-            currentNode=new Node(value)
+        if(parentNode) {
+            parentNode.appendChild(new Node(value))
         } else {
-            const newNode = new Node(value)
-            newNode.childeNode = currentNode
-            if(parentNode) {
-                parentNode.childeNode = newNode
-            } else {
-                this.firstNode = newNode
-            }
-        }
-        
-        if(parentNode && parentNode.childeNode===undefined) {
-            parentNode.childeNode = currentNode
+            let node = new Node(value)
+            node.appendChild(this.firstNode)
+            this.firstNode = node
         }
     }
 
@@ -86,29 +113,37 @@ export class OrderedLinkedList {
         this.indexNode = this.firstNode
         
         this.count--
-        // console.log("count - 1")
-        // return node.value
+
         return node ? node.value : undefined
     }
 
     removeNext() {
+
+        if(!this.firstNode) {
+            return
+        }
+
         let node = this.indexNode
-        let parent = this.indexNode.parentNode
-        this.indexNode = this.indexNode && this.indexNode.childeNode ? this.indexNode.childeNode : this.firstNode
-        if(parent) {
-            parent.childeNode = this.indexNode
+
+        this.indexNode = this.indexNode.childeNode
+
+        if(!this.indexNode) {
+            this.indexNode = this.firstNode
+        } //this is the new line
+
+        if(node.childeNode) {
+            if(node === this.firstNode) {
+                this.firstNode = node.childeNode
+            }
+            node.childeNode.removeParent()
+        } else if(node.parentNode) {
+            node.parentNode.removeChild()
         } else {
-            this.firstNode = this.indexNode
-        }
-        if(this.indexNode) {
-            this.indexNode.parentNode = parent
-        }
-        if(node === this.firstNode) {
             this.firstNode = undefined
         }
+
         this.count--
-        // console.log("count - 1")
-        // return node.value
+
         return node
     }
 

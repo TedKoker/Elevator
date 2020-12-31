@@ -84,14 +84,20 @@ export class Building2 {
         if(!this.currentList) {
             this.currentList = this.upList.firstNode ? this.upList : this.downList
         }
-        if(this.currentList.count === 0) {
-            this.currentList = this.currentList===this.upList ? this.downList : this.upList
-        }
+        // if(this.currentList.count === 0) {
+        //     this.currentList = this.currentList===this.upList ? this.downList : this.upList
+        // }
         if(!this.elevatorMove && this.currentList.count > 0) {
             let nextFloor = this.currentList.removeNext()
-            // if(!nextFloor.childeNode) { // && !nextFloor.childeNode
-            //     this.currentList = this.currentList===this.upList ? this.downList : this.upList
-            //     console.log("switch lists")
+            console.log(this.currentList)
+            console.log(nextFloor)
+            if(!nextFloor) { // && !nextFloor.childeNode
+                this.currentList = this.currentList===this.upList ? this.downList : this.upList
+                console.log("switch lists")
+            }
+            /////////////////////////////////////////////
+            // if(nextFloor) {
+            //     this.manageCall(call || {destination: nextFloor.value, goingUp: this.currentList===this.upList})
             // }
             this.manageCall(call || {destination: nextFloor.value, goingUp: this.currentList===this.upList})
         }
