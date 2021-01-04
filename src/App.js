@@ -16,22 +16,14 @@ function App() {
     // linked.print()
     // linked.removeNext()
     // linked.print()
-    // linked.appenedNode(30)
-    // linked.print()
     // linked.removeNext()
     // linked.print()
-    // let a = linked.removeNext()
-    // linked.print()
-    // while(a) {
-    //   a= linked.removeNext()
-    //   console.log(a)
-    // }
-    // console.log("end loop")
-    // linked.print()
-    // linked.removeNext()
-    // linked.print()
-    // linked.appenedNode(-1)
     // linked.appenedNode(-2)
+    // linked.print()
+    // // debugger
+    // linked.appenedNode(-1)
+    // linked.print()
+    // linked.removeNext()
     // linked.print()
   },[])
 

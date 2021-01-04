@@ -31,6 +31,9 @@ class Node {
         this.childeNode = node
         this.childeNode.parentNode = this
         if(child) {
+            /////////////
+            child.parentNode = node
+            /////////////
             this.childeNode.childeNode = child
         }
     }
@@ -65,6 +68,10 @@ class Node {
     }
 
 }
+
+/**
+ * If same value node added, do not add it!!
+ */
 
 export class OrderedLinkedList {
     firstNode
@@ -118,18 +125,18 @@ export class OrderedLinkedList {
     }
 
     removeNext() {
-
+        // debugger
         if(!this.firstNode) {
-            return
+            return undefined
+        }
+
+        if(!this.indexNode) {
+            this.indexNode = this.firstNode
         }
 
         let node = this.indexNode
 
         this.indexNode = this.indexNode.childeNode
-
-        if(!this.indexNode) {
-            this.indexNode = this.firstNode
-        } //this is the new line
 
         if(node.childeNode) {
             if(node === this.firstNode) {
@@ -145,6 +152,27 @@ export class OrderedLinkedList {
         this.count--
 
         return node
+    }
+
+    getIndexNode() {
+        if(!this.indexNode) {
+            this.indexNode = this.firstNode
+        }
+
+        return this.indexNode
+    }
+
+    backIndex() {
+        if(!this.firstNode) {
+            return
+        }
+
+        if(!this.indexNode) {
+            this.indexNode = this.firstNode
+            return
+        }
+
+        this.indexNode = this.indexNode.parentNode
     }
 
     print() {

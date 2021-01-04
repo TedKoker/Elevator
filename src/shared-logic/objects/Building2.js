@@ -10,6 +10,7 @@ export class Building2 {
     upList
     downList
     currentList
+    animationFrames
 
     constructor(canvas, position, floorDimentions, floors) {
         if(!(canvas instanceof HTMLCanvasElement)) {
@@ -32,6 +33,7 @@ export class Building2 {
         this.elevatorMove = false
         this.upList = new OrderedLinkedList("minFirst")
         this.downList = new OrderedLinkedList("maxFirst")
+        this.animationFrames = {movement: undefined, door: undefined}
     }
 
     build(elevatorPosition) {
@@ -76,32 +78,65 @@ export class Building2 {
     }
 
     answerCall(call) {
+
+        const floor = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
+
+        const pushFloorBetween = (list) => {
+            if(!list || !list.getIndexNode()) {
+                return
+            }
+            
+            if(list.orderType.rule(call.destination, this.currentList.getIndexNode().value)) {
+                if(list.orderType.rule(floor, call.destination)) {
+                    cancelAnimationFrame(this.animationFrames.movement)
+                    this.elevatorMove = false
+                    this.currentList.backIndex()
+                    this.manageCall(call)
+                }
+            }
+        }
+
         if(call && call.goingUp) {
             this.upList.appenedNode(call.destination)
+            // if(this.currentList && call.destination < this.currentList.getIndexNode().value && 
+            //     call.destination > floor && this.animationFrames.movement) {
+            //     pushFloorBetween()
+            // }
+            if(this.currentList === this.upList) {
+                pushFloorBetween(this.upList)
+            }
         } else if(call) {
             this.downList.appenedNode(call.destination)
+            // if(this.currentList && call.destination > this.currentList.getIndexNode().value && 
+            //     call.destination < floor && this.animationFrames.movement) {
+            //     pushFloorBetween()
+            // }
+            if(this.currentList === this.downList) {
+                pushFloorBetween(this.downList)
+            }
         }
+
         if(!this.currentList) {
             this.currentList = this.upList.firstNode ? this.upList : this.downList
         }
-        // if(this.currentList.count === 0) {
-        //     this.currentList = this.currentList===this.upList ? this.downList : this.upList
-        // }
-        if(!this.elevatorMove && this.currentList.count > 0) {
-            let nextFloor = this.currentList.removeNext()
-            console.log(this.currentList)
-            console.log(nextFloor)
-            if(!nextFloor) { // && !nextFloor.childeNode
-                this.currentList = this.currentList===this.upList ? this.downList : this.upList
-                console.log("switch lists")
+
+        if(!this.elevatorMove) {
+
+            let nextFloor = this.currentList.getIndexNode()
+            if(!nextFloor) {
+                this.currentList = this.currentList === this.upList ? this.downList : this.upList 
+                nextFloor = this.currentList.getIndexNode()
+
+                if(!nextFloor) {
+                    return
+                }
             }
-            /////////////////////////////////////////////
-            // if(nextFloor) {
-            //     this.manageCall(call || {destination: nextFloor.value, goingUp: this.currentList===this.upList})
-            // }
             this.manageCall(call || {destination: nextFloor.value, goingUp: this.currentList===this.upList})
+
         }
-    }
+
+    } 
+    
 
     manageCall(call) {
         const floor = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
@@ -117,6 +152,7 @@ export class Building2 {
     animateMove(call) {
         this.elevatorMove = true
         let condition, growth
+
         const startLocation = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
         if(startLocation < call.destination) {
             condition = (current, final) => {return current < final}
@@ -136,12 +172,12 @@ export class Building2 {
             this.buildElveator(this.elevatorPosition)
 
             if(condition(location, call.destination)) {
-                window.requestAnimationFrame(moveElevator)
+                this.animationFrames.movement = window.requestAnimationFrame(moveElevator)
             } else {
                 this.manageCall(call)
             }
         }
-         window.requestAnimationFrame(moveElevator)
+        this.animationFrames.movement = window.requestAnimationFrame(moveElevator)
     }
 
     animateDoor(call) {
@@ -161,7 +197,7 @@ export class Building2 {
                 growth+=1
                 window.requestAnimationFrame(doorAction)
             } else if (open) {
-                console.log("point to choose if call.callPoint is true")
+                // console.log("point to choose if call.callPoint is true")
                 setTimeout(() => {
                     growth = 1
                     open = false
@@ -169,6 +205,16 @@ export class Building2 {
                 }, 1000)
             } else {
                 this.elevatorMove = false
+                let removed = this.currentList.removeNext()
+                if(this.currentList === this.upList) {
+                    if(removed && this.currentList.getIndexNode() && removed.value > this.currentList.getIndexNode().value) {
+                        this.currentList = this.downList
+                    }
+                } else {
+                    if(removed && this.currentList.getIndexNode() && removed.value < this.currentList.getIndexNode().value) {
+                        this.currentList = this.upList
+                    }
+                }
                 this.manageCall(call)
             }
         }
