@@ -80,7 +80,7 @@ export class Building2 {
     answerCall(call) {
 
         const floor = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
-
+        
         const pushFloorBetween = (list) => {
             if(!list || !list.getIndexNode()) {
                 return
@@ -96,21 +96,18 @@ export class Building2 {
             }
         }
 
+        if(call && call.destination === floor) {
+            this.animateDoor(call)
+            return
+        }
+
         if(call && call.goingUp) {
             this.upList.appenedNode(call.destination)
-            // if(this.currentList && call.destination < this.currentList.getIndexNode().value && 
-            //     call.destination > floor && this.animationFrames.movement) {
-            //     pushFloorBetween()
-            // }
             if(this.currentList === this.upList) {
                 pushFloorBetween(this.upList)
             }
         } else if(call) {
             this.downList.appenedNode(call.destination)
-            // if(this.currentList && call.destination > this.currentList.getIndexNode().value && 
-            //     call.destination < floor && this.animationFrames.movement) {
-            //     pushFloorBetween()
-            // }
             if(this.currentList === this.downList) {
                 pushFloorBetween(this.downList)
             }
@@ -121,7 +118,6 @@ export class Building2 {
         }
 
         if(!this.elevatorMove) {
-
             let nextFloor = this.currentList.getIndexNode()
             if(!nextFloor) {
                 this.currentList = this.currentList === this.upList ? this.downList : this.upList 
@@ -140,6 +136,7 @@ export class Building2 {
 
     manageCall(call) {
         const floor = (this.position.y-this.elevatorPosition)/this.floorDimentions.height
+
         if(!this.elevatorMove && floor !==call.destination) {
             this.animateMove(call)
         } else if(this.elevatorMove) {

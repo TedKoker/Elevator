@@ -8,10 +8,10 @@ function App() {
   useEffect(() => {
     let linked = new OrderedLinkedList("minFirst")
 
-    // const arr = [10,2,0,4,6,7,-5]
-    // arr.forEach(val => {
-    //   linked.appenedNode(val)
-    // })
+    const arr = [10,2,0,4, 2 ,6, 2, 2, 2,7,-5]
+    arr.forEach(val => {
+      linked.appenedNode(val)
+    })
 
     // linked.print()
     // linked.removeNext()

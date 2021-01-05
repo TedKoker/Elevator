@@ -13,6 +13,7 @@ const order = {
     }
 }
 
+
 class Node {
 
     value
@@ -102,6 +103,9 @@ export class OrderedLinkedList {
         let parentNode = undefined
 
         while(currentNode && !this.orderType.rule(value, currentNode.value)) {
+            if(value === currentNode.value) {
+                return
+            }
             parentNode = currentNode
             currentNode = currentNode.childeNode
         }
@@ -125,7 +129,6 @@ export class OrderedLinkedList {
     }
 
     removeNext() {
-        // debugger
         if(!this.firstNode) {
             return undefined
         }
